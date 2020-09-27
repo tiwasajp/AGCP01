@@ -33,7 +33,7 @@ const io = websocket(https.createServer({
   {pingTimeout:60000}
 );
 */
-const io = websocket.listen(http.createServer(app).listen(PORT, () => {`Server listening on port ${PORT}`);}));
+const io = websocket.listen(http.createServer(app).listen(PORT, () => {console.log(`Server listening on port ${PORT}`);}));
 
 const data = [];
 
