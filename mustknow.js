@@ -37,7 +37,7 @@ console.log(`a.x=${a.x}`);　
 // a.x=5 となる。b.x = 5 としたのに、aのオブジェクトの値が変わっている。つまり、a = bで、aとbは同じオブジェクトを指すことになる。C/C++のポインターの概念と同じ。
 
 
-//returnでオブジェクトを返すことができる。(評価式? 真の場合 : 偽の場合)の利用も便利。
+//returnでオブジェクトを返すことができる。(評価式 ? 真の場合 : 偽の場合)の利用も便利。
 const func = (loc) => {return {result:(loc === "Tokyo" ? "Osaka" : "Tokyo")}};
 console.log(func(func(func("Osaka").result).result).result);
 // Tokyo
