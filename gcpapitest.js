@@ -1,7 +1,7 @@
 /*
 You need to install Google packages.
 # npm install firebase-admin
-# npm install dialogflow      
+# npm install dialogflow
 # npm install @google-cloud/language
 # npm install @google-cloud/translate
 # npm install @google-cloud/vision
@@ -51,11 +51,11 @@ let translate = new Translate(ProjectID);
 
 const DetectVision = require("./gcp/detectVision");
 let detectVision = new DetectVision();
-// await detectVision.detectLabels("path/file").then((labels) => {console.log(labels);});
 // await detectVision.detectFaces("path/filename").then((faces) => {console.log(faces);});
 // await detectVision.detectLabels("path/filename").then((labels) => {console.log(labels);});
 // await detectVision.detectLogos("path/filename").then((logos) => {console.log(logos);});
 // await detectVision.detectLandmarks("path/filename").then((landmarks) => {console.log(landmarks);});
+// await detectVision.detectFulltext("path/filename").then((fullText) => {console.log(fullText)});
 
 const Video = require("./gcp/video");
 let video = new Video();
