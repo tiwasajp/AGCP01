@@ -43,7 +43,7 @@ let entitySentiment = new EntitySentiment();
 
 const AnalyzeSyntax = require("./gcp/analyzeSyntax");
 let analyzeSyntax = new AnalyzeSyntax();
-// await analyzeSyntax.analyzeSyntaxText("text").then((syntax) => {console.log(syntax);});
+await analyzeSyntax.analyzeSyntaxText("今日の東京の天気は").then((syntax) => {console.log(syntax);});
 
 const Translate = require("./gcp/translate");
 let translate = new Translate(ProjectID);
