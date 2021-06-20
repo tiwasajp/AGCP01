@@ -11,7 +11,7 @@ websocket = require("socket.io"),
 fs = require("fs");
 
 //const PORT = 443;
-const PORT = 80;
+const PORT = 8080;
 
 const app = express();
 app.use(express.static("public"));
