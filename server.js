@@ -70,7 +70,7 @@ io.on("connection", (socket) => {
 	if (message.action === "join") {
 	  socket.join(message.room);
 	  io.sockets.emit("session", message);
-	  console.log("join userId:", message.userId, "room:", message.room, "length:", io.sockets.adapter.rooms[message.room].length);
+	  console.log("join userId:", message.userId, "room:", message.room);
 	  return;
 	}
 	else if (message.action === "leave") {
