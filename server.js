@@ -37,6 +37,12 @@ const io = websocket(http.createServer(app).listen(PORT, () => {console.log(`Ser
 
 const data = [{text:"zero"}];
 
+// for health check
+app.get('/', (req, resp) => {
+  console.log("/ health check");
+  return resp.sendStatus(200);
+});
+
 app.post("/postText", (req, resp) => {
   resp.sendStatus(200).end();
   data.push({'text':(new Buffer.from(req.body.data, "base64")).toString().replace(/\"/g, '')});
