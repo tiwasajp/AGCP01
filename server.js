@@ -10,8 +10,8 @@ http = require("http"),
 websocket = require("socket.io"),
 fs = require("fs");
 
-const PORT = 443;
-//const PORT = 80;
+//const PORT = 443;
+const PORT = 80;
 
 const app = express();
 app.use(express.static("public"));
@@ -22,7 +22,7 @@ app.set("view engine", "ejs");
 app.set('trust proxy', true);
 module.exports = app;
 
-
+/*
 const io = websocket(https.createServer({
   key  : fs.readFileSync("../share/certificates/private.key"),
   cert : fs.readFileSync("../share/certificates/server.crt"),
@@ -32,8 +32,9 @@ const io = websocket(https.createServer({
   app).listen(PORT, () => {console.log(`Server listening on port ${PORT}`);}),
   {pingTimeout:60000}
 );
+*/
 
-//const io = websocket(http.createServer(app).listen(PORT, () => {console.log(`Server listening on port ${PORT}`);}));
+const io = websocket(http.createServer(app).listen(PORT, () => {console.log(`Server listening on port ${PORT}`);}));
 
 const data = [{text:"zero"}];
 
