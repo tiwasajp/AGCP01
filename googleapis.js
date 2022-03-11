@@ -1,0 +1,74 @@
+/*
+You need to install Google packages.
+# npm install firebase-admin
+# npm install dialogflow
+# npm install @google-cloud/language
+# npm install @google-cloud/translate
+# npm install @google-cloud/vision
+# npm install @google-cloud/video-intelligence
+# npm install @google-cloud/speech
+*/
+
+(async () => {
+
+const ProjectID = "ccai-dialogflow2-uthixs";
+
+const admin = require('firebase-admin');
+admin.initializeApp();
+const db = admin.firestore();
+/*
+  db.collection('users').get().then((snapshot) => {
+	snapshot.forEach((doc) => {
+	  if (doc.id === req.query.documentId) {
+		console.log(doc.id + "=>" + JSON.stringify(doc.data()));
+      }
+	});
+  }).catch((error) => {
+    console.log("Error getting documents", error);
+  })
+*/
+
+const KmsKeyName = "projects/ccai-dialogflow2-uthixs/locations/asia-east1/keyRings/key-ring1/cryptoKeys/key1";
+const Storage = require("./gcp/storage");
+var storage = new Storage(KmsKeyName);
+// await storage.uploadFivaroCloud("context_bucket1", "path/file").then((filename) => {console.log(filename);});
+
+const DetectIntent = require("./gcp/detectIntent");
+var detectIntent = new DetectIntent(ProjectID);
+// await detectIntent.detectTextIntent("1", ["text"], "ja").then((queryResult) => {console.log(queryResult);});
+
+const EntitySentiment = require("./gcp/entitySentiment");
+var entitySentiment = new EntitySentiment();
+// await entitySentiment.getEntitySentiment("text").then((entities) => {console.log(entities);});
+
+const AnalyzeSyntax = require("./gcp/analyzeSyntax");
+var analyzeSyntax = new AnalyzeSyntax();
+await analyzeSyntax.analyzeSyntaxText("今日の東京の天気は").then((syntax) => {console.log(syntax);});
+
+const Translate = require("./gcp/translate");
+var translate = new Translate(ProjectID);
+await translate.translateText("今日の東京の天気は", "ja", "en").then((translations) => {console.log(translations);});
+
+const DetectVision = require("./gcp/detectVision");
+var detectVision = new DetectVision();
+// await detectVision.detectFaces("path/filename").then((faces) => {console.log(faces);});
+// await detectVision.detectLabels("path/filename").then((labels) => {console.log(labels);});
+// await detectVision.detectLogos("path/filename").then((logos) => {console.log(logos);});
+// await detectVision.detectLandmarks("path/filename").then((landmarks) => {console.log(landmarks);});
+// await detectVision.detectFulltext("path/filename").then((fullText) => {console.log(fullText)});
+
+const Video = require("./gcp/video");
+var video = new Video();
+// await video.annotateVideo("gs://bucket/file").then((segmentLabelAnnotations) => {console.log(segmentLabelAnnotations);});
+// exec("ffmpeg -i public/tmp/video.mp4 -ac 1 public/tmp/audio.wav", (error, stdout, stderr) => {if (error) {console.log(error);}});
+
+const Speech = require("./gcp/speech");
+var speech = new Speech();
+// await speech.transcription("path/filename").then((transcription) => {console.log(transcription);});
+
+const Speech8k = require("./gcp/speech8k");
+var speech8k = new Speech8k();
+// await speech8k.transcription_base64(base64_string).then((transcription) => {console.log(transcription);});
+
+})();
+
