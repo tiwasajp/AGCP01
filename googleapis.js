@@ -42,7 +42,7 @@ var storage = new Storage(KmsKeyName);
 //　Dialogflowと、フロントエンド側で連携するためのAPI（チャットクライアントのテキストをDialogflowし、レスポンスを受け取るためのAPI）
 const DetectIntent = require("./gcp/detectIntent");
 var detectIntent = new DetectIntent(ProjectID);
-//await detectIntent.detectTextIntent("1", ["今日の名古屋の天気は"], "ja").then((queryResult) => {console.log(queryResult);});
+await detectIntent.detectTextIntent("1", ["今日の名古屋の天気は"], "ja").then((queryResult) => {console.log(queryResult);});
 
 //　テキストの意味分類および単語の感情分離のAPI
 const EntitySentiment = require("./gcp/entitySentiment");

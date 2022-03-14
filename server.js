@@ -51,6 +51,7 @@ app.get('/', (req, resp) => {
 
 const getResponseContext = (key, message, _func) => {
 	const URL = `https://agcp02-dstgvjoujq-an.a.run.app/getValueByKey?key=${key}`;
+	// agcp02-dstgvjoujq-an.a.run.app は、各自のCloud Runで生成されたURLに置き換える。
 	request.get({url:encodeURI(URL), json:true,}, (error, resp, body) => {
 		if (!error && resp.statusCode == 200) {
 			const data = JSON.parse((new Buffer.from(body, "base64")).toString());
