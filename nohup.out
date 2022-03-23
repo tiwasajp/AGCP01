@@ -1,0 +1,25 @@
+Server listening on port 443
+Agent parameters:
+{
+  weather: '天気',
+  date: '2022-03-22T12:00:00+09:00',
+  location: {
+    country: '',
+    city: '名古屋市',
+    'admin-area': '',
+    'business-name': '',
+    'street-address': '',
+    'zip-code': '',
+    shortcut: '',
+    island: '',
+    'subadmin-area': ''
+  }
+}
+request.get error Error: Invalid URI "undefined/getValueByKey?key=%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82"
+node:internal/process/promises:265
+            triggerUncaughtException(err, true /* fromPromise */);
+            ^
+
+[UnhandledPromiseRejection: This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). The promise rejected with the reason "null".] {
+  code: 'ERR_UNHANDLED_REJECTION'
+}

@@ -1,5 +1,35 @@
+const imagePad = {
+  canvas : document.getElementById("imagePad"),
+  context : document.getElementById("imagePad").getContext("2d"),
+  src : null,
+  rect : {left:0, top:0, width:0, height:0},
+};
+
+document.getElementById("fileUpload").addEventListener("change", (e) => {
+  if (e.target.files[0].type.match("image.*")) {
+	imagePad.context.clearRect(0, 0, imagePad.canvas.width, imagePad.canvas.height);
+    var image = new Image();
+    image.src = window.URL.createObjectURL(e.target.files[0]);
+    image.onload = () => {
+      var width = image.width;
+      var height = image.height;
+      const max_image_width = 800;
+      if (width > max_image_width) {
+        width = max_image_width;
+        height = image.height * (max_image_width / image.width);
+      }
+      imagePad.canvas.width = width;
+      imagePad.canvas.height = height;
+      console.log(`imagePad.canvas.width:${imagePad.canvas.width} imagePad.canvas.height:${imagePad.canvas.height}`);
+      imagePad.canvas.getContext("2d").drawImage(image, 0, 0, imagePad.canvas.width, imagePad.canvas.height);
+      socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", ""), 
+        body:{media:{type:"dialog", dialog:{messages:[{type:"image", url:document.getElementById("imagePad").toDataURL()}]}}}});
+    }
+  }
+});
+
 $("#typetext").keypress((e) => {
-  if (e.keyCode !== 13) return;
+  if (!(e.keyCode === 13 || e.keyCode === 229)) return;
   if ($("#typetext").val() === "") return;
   socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", ""), body:{media:{type:"dialog", dialog:{messages:[{type:"text", text:$("#typetext").val()}]}}}});
   $("#typetext").val("");
@@ -10,22 +40,25 @@ $("#chat-send").click(() => {
   if ($("#typetext").val() === "") return;
   socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", ""), body:{media:{type:"dialog", dialog:{messages:[{type:"text", text:$("#typetext").val()}]}}}});
   $("#typetext").val("");
+  return false;
 });
 
-$("#chat-menu1").click(() => {
-  socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", "customer"), body:{media:{type:"dialog", dialog:{messages:[{type:"image", url:"images/ic_smile_200.png"}]}}}});
-  $("#chat-menu").hide();
+$("#chat-icons-btn").click(() => {
+	$("#chat-text").hide();
+	$("#chat-icons").show();
 });
 
-$("#chat-menu2").click(() => {
-  socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", "customer"), body:{media:{type:"dialog", dialog:{messages:[{type:"image", url:"images/ic_normal_200.png"}]}}}});
-  $("#chat-menu").hide();
+$("#chat-icons").click(() => {
+	$("#chat-icons").hide();
+	$("#chat-text").show();
 });
 
-$("#chat-menu3").click(() => {
-  socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", "customer"), body:{media:{type:"dialog", dialog:{messages:[{type:"image", url:"images/ic_depress_200.png"}]}}}});
-  $("#chat-menu").hide();
+/*
+const stickers = ["images/ic_smile_200.png", "images/ic_normal_200.png", "images/ic_depress_200.png"];
+$(".chat-menu").click(function() {
+  socket.emit("data", {header:header(cmsp.client.userId, cmsp.client.room, cmsp.client.type, cmsp.client.mode, "chat", "customer"), body:{media:{type:"dialog", dialog:{messages:[{type:"image", url:stickers[$(this).attr("id").slice(-1)-1]}]}}}});
 });
+*/
 
 const append_chat_messages = (message)=> {
 	if (message.body.media.type === "dialog" && !message.body.media.dialog) return;

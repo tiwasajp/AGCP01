@@ -8,29 +8,27 @@ VMインスタンスへ、以下のnode.js用のモジュールを、npmでイ�
 # npm install @google-cloud/vision
 # npm install @google-cloud/video-intelligence
 # npm install @google-cloud/speech
-
-自然言語関連パッケージを一括でインストール
-# npm install --save @google-cloud/language
 */
 
 (async () => {
 
 const ProjectID = "ccai-dialogflow2-uthixs";
 
-//　GCPのNoSQL（Unstructuredのレコードのデータベース）にアクセスするためのAPI
+//　GCPのNoSQL（Unstructuredのレコードのデータベース）のFirestoreにアクセスする例
+/*
 const admin = require('firebase-admin');
 admin.initializeApp();
 const db = admin.firestore();
-/*
-  db.collection('users').get().then((snapshot) => {
-	snapshot.forEach((doc) => {
-	  if (doc.id === req.query.documentId) {
-		console.log(doc.id + "=>" + JSON.stringify(doc.data()));
-      }
-	});
-  }).catch((error) => {
-    console.log("Error getting documents", error);
-  })
+db.collection('weather').get().then((snapshot) => {
+  snapshot.forEach((doc) => {
+    if (doc.id === "札幌") {
+      console.log(`doc.id ${doc.id}`);
+      console.log(doc.data());
+    }
+  });
+}).catch((error) => {
+  console.log("Error getting documents", error);
+})
 */
 
 //　GCPのファイルサーバーのサービスを利用するAPI
@@ -42,7 +40,7 @@ var storage = new Storage(KmsKeyName);
 //　Dialogflowと、フロントエンド側で連携するためのAPI（チャットクライアントのテキストをDialogflowし、レスポンスを受け取るためのAPI）
 const DetectIntent = require("./gcp/detectIntent");
 var detectIntent = new DetectIntent(ProjectID);
-await detectIntent.detectTextIntent("1", ["今日の名古屋の天気は"], "ja").then((queryResult) => {console.log(queryResult);});
+//await detectIntent.detectTextIntent("1", ["今日の名古屋の天気は"], "ja").then((queryResult) => {console.log(queryResult);});
 
 //　テキストの意味分類および単語の感情分離のAPI
 const EntitySentiment = require("./gcp/entitySentiment");

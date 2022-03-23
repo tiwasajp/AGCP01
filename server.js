@@ -8,6 +8,10 @@ const websocket = require("socket.io");
 //const https = require("https");
 const http = require("http");
 const request = require("request");
+const base64 = require('urlsafe-base64');
+
+const {WebhookClient, Payload} = require('dialogflow-fulfillment');
+const DetectIntent = require("./gcp/detectIntent");
 
 //const PORT = 443;
 const PORT = 80;
@@ -29,47 +33,55 @@ const io = websocket(https.createServer({
   requestCert : true,
   rejectUnauthorized : false}, 
   app).listen(PORT, 
-  () => {console.log(`Server listening on port ${PORT}`);}),
-    {pingTimeout:60000, pingInterval:25000}
+  () => {
+    console.log(`Server listening on port ${PORT}`);
+  }),
+  {
+	pingTimeout:60000, 
+	pingInterval:25000
+  }
 );
 */
 
 const io = websocket(http.createServer(app).listen(PORT, 
-  () => {console.log(`Server listening on port ${PORT}`);}, 
-    {pingTimeout:60000, pingInterval:25000}
+  () => {
+	console.log(`Server listening on port ${PORT}`);
+  }, 
+  {
+	  pingTimeout:60000, 
+	  pingInterval:25000
+  }
 ));
 
 
-// for health check
+// health check for instance group/container
 app.get('/', (req, resp) => {
-  console.log(`/ health check ${req.query}`);
+  //console.log(`/ health check ${req.query}`);
   return resp.sendStatus(200);
 });
 
-// Chat Client Services /////////////////////////////////////////////////////////////
-// チャットのフロントエンドのサービス（顧客のチャットクライアントアプリケーションサーバー）
+// Chat Client Services /////////////////////////////////////////////////////////////////
 
-const getResponseContext = (key, message, _func) => {
-	const URL = `https://agcp02-dstgvjoujq-an.a.run.app/getValueByKey?key=${key}`;
-	// agcp02-dstgvjoujq-an.a.run.app は、各自のCloud Runで生成されたURLに置き換える。
-	request.get({url:encodeURI(URL), json:true,}, (error, resp, body) => {
-		if (!error && resp.statusCode == 200) {
-			const data = JSON.parse((new Buffer.from(body, "base64")).toString());
-			console.log(`request.get ${data.key} ${data.value}`);
-			if (data.value) {
-				message.body.media.dialog.messages[0].text = data.value;
-			}
-			else {
-				message.body.media.dialog.messages[0].text = "もう一度、お願いします。";
-			}
-			_func(message);
-		}
-		else {
-			console.log(`request.get error ${error}`);
-			message.body.media.dialog.messages[0].text = "もう一度、お願いします。";
-			_func(message);
-		}
+// チャットのバックエンド連携サービス（チャットサーバー）からkeyで外部データ検索
+const getResponseContext = (key) => {
+  // 以下の agcp02-dstgvjoujq-an.a.run.app は、各自のCloud Runで生成されたURLに置き換える。
+  //const URL = `https://agcp02-dstgvjoujq-an.a.run.app/getValueByKey?key=${key}`;
+  // コンテナーでデプロイした場合は、環境変数で渡すとよい。
+  const URL = `${process.env.CONTEXT_SERVER_URL}/getValueByKeyFromFirestore?key=${key}`;
+  return new Promise(function (resolve, reject) {
+    request.get({url:encodeURI(URL), json:true,}, (error, resp, body) => {
+	  if (!error && resp.statusCode == 200) {
+	    var data = JSON.parse((new Buffer.from(body, "base64")).toString());
+		console.log(`request.get:`);
+		console.log(data);
+		resolve(data);
+	  }
+	  else {
+	    console.log(`request.get error ${error}`);
+		reject(null);
+	  }
 	});
+  });
 }
 
 io.on("connection", (socket) => {
@@ -86,7 +98,7 @@ io.on("connection", (socket) => {
 	if (message.action === "join") {
 	  socket.join(message.room);
 	  io.sockets.emit("session", message);
-	  console.log("join userId:", message.userId, "room:", message.room);
+	  console.log(`join userId:${message.userId} room:${message.room}`);
 	  return;
 	}
 	else if (message.action === "leave") {
@@ -98,8 +110,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("data", async (message) => {
-	console.table(message.header);
-	console.log(`message.body:${JSON.stringify(message.body)}`);
+	console.log(`message.header: ${JSON.stringify(message.header)}`);
+	console.log(`message.body: ${JSON.stringify(message.body)}`);
 	io.to(message.header.room).emit("data", message);
 	　
 	if (message.header.type !== "customer") {
@@ -110,26 +122,65 @@ io.on("connection", (socket) => {
 	message.header.type = "bot";
 	
 	// （１）顧客がタイプしたテキストを、そのままレスポンスする（オウム返し）
+	//io.to(message.header.room).emit("data", message); 
 	
-	io.to(message.header.room).emit("data", message); 
-	
-
-	// （２）特定のワードにて、外部データ参照（Cloud RunのWebサービス利用）で、レスポンスを返す
+	// （２）顧客がタイプしたテキストを、英語に翻訳してレスポンスを返す
+	//　多言語翻訳のAPI
 	/*
+	if (message.body.media.dialog.messages[0].type === "text") {
+		const Translate = require("./gcp/translate");
+		const ProjectID = "ccai-dialogflow2-uthixs";
+		var translate = new Translate(ProjectID);
+		translate.translateText(message.body.media.dialog.messages[0].text, "ja", "en").then((translations) => {
+			console.log(translations);
+			message.body.media.dialog.messages[0].text = translations[0].translatedText;
+			io.to(message.header.room).emit("data", message);
+		});
+	}
+	*/
+	
+	// （３）画像内のテキストを認識し、テキストをレスポンスにする
+	//　画像解析（OCR）のAPI
+	/*
+	if (message.body.media.dialog.messages[0].type === "image") {
+		const DetectVision = require("./gcp/detectVision");
+		var detectVision = new DetectVision();
+		var imageFile = `public/data/temp.png`;
+    	fs.writeFile(imageFile, base64.decode(message.body.media.dialog.messages[0].url.split(',')[1]), async (error) => {
+        	if (error) {
+          		console.log(`writeFile ${imageFile} ${error}`);
+          		return;
+        	}
+			detectVision.detectFulltext(imageFile).then((fullText) => {
+				console.log(fullText)
+				message.body.media.dialog.messages[0] = {type:"text", text:fullText[0].text};
+				io.to(message.header.room).emit("data", message);
+			});
+		});
+	}
+	*/
+	
+	// （４）特定のワードにて、外部データ参照（Cloud RunのWebサービス利用）で、レスポンスを返す
 	// Simple Chat Bot Service //
+	
 	if (message.body.media.dialog.messages[0].type === "text") {
 		const keywords = ["東京","名古屋","大阪","札幌"];
 		var key = "";
 		keywords.forEach((keyword) => {
-			if(message.body.media.dialog.messages[0].text.indexOf(keyword) !== -1) {
+			if　(message.body.media.dialog.messages[0].text.indexOf(keyword) !== -1) {
 				key = keyword;
 			}
 		});
 		if (key) {
 			// Make a bot response using external services ///////
-			getResponseContext(key, message, (message) => {
-				io.to(message.header.room).emit("data", message); 
-			});
+			var data = await getResponseContext(key);
+			if (data.length > 0) {
+			  message.body.media.dialog.messages[0].text = data[0].value;
+			}
+			else {
+			  message.body.media.dialog.messages[0].text = "もう一度、お願いします。";
+			}
+			io.to(message.header.room).emit("data", message);
     	} 
     	else {
 			message.body.media.dialog.messages[0].text = "もう一度、お願いします。";
@@ -139,21 +190,18 @@ io.on("connection", (socket) => {
 	else {
 		;
 	}
-	*/
 	
-	// （３）Dialogflowとの連携
+	// （５）Dialogflowとの連携
+	// Dialogflow Chat Bot Service //	
 	/*
-	// Dialogflow Chat Bot Service //
-	const ProjectID = "ccai-dialogflow2-uthixs";
-	const DetectIntent = require("./gcp/detectIntent");
-	var detectIntent = new DetectIntent(ProjectID);
-	await detectIntent.detectTextIntent("1", [message.body.media.dialog.messages[0].text], "ja").then((queryResult) => {
-		//console.log(queryResult);
-		message.body.media.dialog.messages[0].text = queryResult.fulfillmentText;
-		io.to(message.header.room).emit("data", message); 
+	var detectIntent = new DetectIntent("ccai-dialogflow2-uthixs");
+	await detectIntent.detectTextIntent(message.header.userId, [message.body.media.dialog.messages[0].text], "ja").then((result) => {
+		console.log(`Dialogflow response:`);
+		console.log(result);
+		message.body.media.dialog.messages[0].text = result.fulfillmentText;
+		io.to(message.header.room).emit("data", message);
 	});
 	*/
-	
   });
 });
 
@@ -168,47 +216,72 @@ You need to have installed Google packages.
 
 var intentMap = new Map();
 
-const agent_contents = (agent) => {
-  console.log(`Intent Name:${agent.intent}`);
-  console.log(`Agent Session:${agent.session}`);
-	
+intentMap.set('Default Welcome Intent', (agent) => {
   if (agent.context && agent.context.contexts['avaya-session-telephone']) {
 	ani = agent.context.contexts['avaya-session-telephone'].parameters.ani;
 	console.log(`Telephpny ani:${ani}`);	
   }
-
-  if (agent.query) {
-	console.log(`Agent query:${agent.query}`);
-  }
-	  
-  var replyText = "";
-  agent.responseMessages_.forEach(d => {
-	if (d.text) {
-     replyText += d.text;
-	}
-  });
-  console.log(`Agent replyText:${replyText}`);
-};
-
-intentMap.set('Default Welcome Intent', (agent) => {
-  agent.add(`こんにちは。要件はなんですか？`);
+  agent.add(`こんにちは。いつも、お世話になっています。`);
 });
 
 intentMap.set('Default Fallback Intent', (agent) => {
   agent.add(`もう一度、お願いします。`);
 });
 
-const getWeather = () => {return {result:"雪"}};
+intentMap.set('Weather', async (agent) => {
+  console.log(`Agent parameters:`);
+  console.log(agent.parameters);
+　
+  //（１）固定したテキストのレスポンスを、DialogflowへFulfillmentのレスポンスとして返す
+  // Make a bot response with dixed text ///////
+　agent.add("晴です。");
 
-intentMap.set('Weather', (agent) => {
-　var weatherInfo = getWeather(agent.contexts);
-  agent.add(`${weatherInfo.result}です。`);
+  //（２）Intentのパラメーターをキーとしてレスポンスを外部データーから取得し、DialogflowへFulfillmentのレスポンスとして返す
+  // Make a bot response using external services ///////
+  /*
+  if (agent.parameters.location.city) {
+    var data = await getResponseContext(agent.parameters.location.city);
+  	if (data.length > 0) {
+      agent.add(`${data[0].value}`);
+    }
+    else {
+      agent.add(`もう一度、お願いします。`);
+	}
+  }
+  else {
+    agent.add(`もう一度、お願いします。`);
+  }
+  */
 });
 
-const {WebhookClient, Payload} = require('dialogflow-fulfillment');
-app.post("/webhook", async (req, resp) => {
+//https://cloud.google.com/dialogflow/es/docs/entities-regexp
+intentMap.set('CallMe', async (agent) => {
+  console.log(`Agent parameters:`);
+  console.log(agent.parameters);
+　if (agent.parameters.phone_number[0]) {
+    agent.add(`了解です。${agent.parameters.phone_number[0]}へ電話します。`);
+  }
+  else {
+	agent.add(`もう一度、お願いします。`);
+  }
+});
+
+intentMap.set('Support', async (agent) => {
+  console.log(`Agent parameters:`);
+  console.log(agent.parameters);
+  agent.add(`どんなサポートですか？`);
+  agent.context.set({name:'supportitems', lifespan:5, parameters:{}});
+});
+
+intentMap.set('Support_wakeup', async (agent) => {
+  console.log(`Agent parameters:`);
+  console.log(agent.parameters);
+  agent.add(`わかりました。起こします。`);
+  agent.context.set({name:'supportitems', lifespan:0, parameters:{}});
+});
+
+app.post("/webhook", (req, resp) => {
   var agent = new WebhookClient({request:req, response:resp});
   agent.handleRequest(intentMap);
-  agent_contents(agent);
 });
 

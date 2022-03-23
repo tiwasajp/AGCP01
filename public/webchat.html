@@ -40,7 +40,7 @@
   	<div id="chat-talk" class="chat-talk" style="padding:10px;width:100%;height:calc(100% - 80px);overflow:hidden;overflow-y:auto;"></div>
     <div class="row" style="width:100%;height:80px;padding-top:15px;">
       	<div style="width:100px;">
-	    	<button id="chat-icons-btn" class="neo-btn-circle neo-btn-circle-tertiary neo-btn-circle-tertiary--info neo-icon-sentiment-very-happy" style="margin-top:5px;margin-left:30px;"></button>
+	    	<button id="chat-icons-btn" class="neo-btn-circle neo-btn-circle-tertiary neo-btn-circle-tertiary--info neo-icon-image" style="margin-top:5px;margin-left:30px;"></button>
 		</div>
 		<div style="width:calc(100% - 100px);">
 			<div id="chat-text" class="disp">
@@ -51,29 +51,29 @@
       		   		</div>
       		   	</div>
       		 </div>
-      		 <div id="chat-icons" class="nodisp" style="width:400px;">
+      		<div id="chat-icons" class="nodisp" style="width:400px;">
+				<div style="margin:5px;display:inline-block;height:30px;">  
+					<form id="form-fileupload" action="upload" method="post" enctype="multipart/form-data" target="_dummy" onsubmit="return false;">
+						<input id="fileUpload" class="neo-btn neo-btn--compact neo-btn-secondary neo-btn-secondary--primary" type="file" name="filetoupload" accept="image/*,video/*"/>
+					</form>	
+				</div>
+				<canvas id="imagePad" class="nodisp"></canvas>
+      		</div>
+      		<!--
+      		<div id="chat-icons" class="nodisp" style="width:400px;">
 				<div class="row">
-        	 		<div id="chat-menu1" style="width:45px;height:45px;float:left;">
+        	 		<div id="chat-menu1" class="chat-menu" style="width:45px;height:45px;float:left;">
            				<img src="images/ic_smile.png" style="width:100%;height:100%;"/>
        				</div>
-          			<div id="chat-menu2" style="width:45px;height:45px;float:left;">
+          			<div id="chat-menu2" class="chat-menu" style="width:45px;height:45px;float:left;">
             			<img src="images/ic_normal.png" style="width:100%;height:100%;"/>
           			</div>
-          			<div id="chat-menu3" style="width:45px;height:45px;float:left;">
+          			<div id="chat-menu3" class="chat-menu" style="width:45px;height:45px;float:left;">
             			<img src="images/ic_depress.png" style="width:100%;height:100%;"/>
           			</div>
       		   	</div>
       		 </div>
-      		<script>
-			  	$("#chat-icons-btn").click(() => {
-				  	$("#chat-text").hide();
-				 	$("#chat-icons").show();
-			  	});
-			  	$("#chat-icons").click(() => {
-				  	$("#chat-icons").hide();
-				  	$("#chat-text").show();
-			  	});
-			</script>
+      		 -->
       	</div>
     </div>
   </div>

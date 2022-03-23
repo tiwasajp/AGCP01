@@ -82,8 +82,8 @@ async function detectTextIntent(projectId, sessionId, queries, languageCode) {
           query,
           languageCode
         );
-        console.log(`Detected intent:${intentResponse.queryResult.intent.displayName}`);
-        console.log(`Fulfillment Text: ${intentResponse.queryResult.fulfillmentText}`);
+        console.log(`Detected intent: ${intentResponse.queryResult.intent.displayName}`);
+        console.log(`Fulfillment text: ${intentResponse.queryResult.fulfillmentText}`);
         // Use the context from this response for next queries
         //context.push(intentResponse.queryResult.outputContexts);
         //console.log('Context:' + JSON.stringify(context));

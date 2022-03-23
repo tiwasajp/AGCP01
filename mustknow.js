@@ -37,11 +37,10 @@ console.log(`a.x=${a.x}`);　
 // a.x=5 となる。b.x = 5 としたのに、aのオブジェクトの値が変わっている。つまり、a = bで、aとbは同じオブジェクトを指すことになる。C/C++のポインターと同じ感じ。
 
 
-//returnでオブジェクトを返すことができる。(評価式 ? 真の場合 : 偽の場合)の利用も便利。
+// returnでオブジェクトを返すことができる。(評価式 ? 真の場合 : 偽の場合)の利用も便利。
 const func = (loc) => {return {result:(loc === "Tokyo" ? "Osaka" : "Tokyo")}};
 console.log(func(func(func("Osaka").result).result).result);
 // Tokyo
-
 
 // JavaScriptは基本的に各ステップでの処理を待たない。特定の範囲で処理を待つ場合はPromise（methodによってすでに埋め込まれていることもある）, async, awaitを使う。
 // 実行結果は以下となる。なぜこの順番になるかを理解できれば、Promise, async, awaitの使い方を理解したと言えます。
@@ -62,6 +61,7 @@ const sleep = (msec, func) => {
   return new Promise((resolve) => setTimeout(() => {func(); resolve();}, msec));
 }
 
+// 非同期・同期の処理とグループ化
 console.log("step 1");
 (async () => {
   console.log("step 2");
@@ -73,3 +73,4 @@ console.log("step 1");
 console.log("step 5");
 sleep(1000, () => {console.log("timeout 5");});
 console.log("step 6");
+
