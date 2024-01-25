@@ -3,7 +3,7 @@
  */
 
 // Imports the Google Cloud Translation library
-const {TranslationServiceClient} = require('@google-cloud/translate');
+import {TranslationServiceClient} from '@google-cloud/translate';
 
 // Instantiates a client
 const translationClient = new TranslationServiceClient();
@@ -36,4 +36,4 @@ translate.prototype.translateText = async function(text, sourceLanguageCode, tar
   return await translateText(this.projectId, text, sourceLanguageCode, targetLanguageCode);
 }
 
-module.exports = translate;
+export default translate;

@@ -16,10 +16,12 @@
 
 process.on('unhandledRejection', console.dir);
 
+import vision from '@google-cloud/vision';
+
 async function detectFaces(filePathName) {
   // [START vision_face_detection]
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  ////import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -47,7 +49,7 @@ async function detectFaces(filePathName) {
 async function detectFacesGCS(bucketName, fileName) {
   // [START vision_face_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -75,7 +77,7 @@ async function detectFacesGCS(bucketName, fileName) {
 async function detectLabels(filePathName) {
   // [START vision_label_detection]
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -100,7 +102,7 @@ async function detectLabels(filePathName) {
 async function detectLabelsGCS(bucketName, fileName) {
   // [START vision_label_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -123,7 +125,7 @@ async function detectLabelsGCS(bucketName, fileName) {
 
 async function detectLandmarks(filePathName) {
   // [START vision_landmark_detection]
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -146,7 +148,7 @@ async function detectLandmarks(filePathName) {
 async function detectLandmarksGCS(bucketName, fileName) {
   // [START vision_landmark_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -169,7 +171,7 @@ async function detectLandmarksGCS(bucketName, fileName) {
 
 async function detectText(fileName) {
   // [START vision_text_detection]
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -190,7 +192,7 @@ async function detectText(fileName) {
 async function detectTextGCS(bucketName, fileName) {
   // [START vision_text_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -211,7 +213,7 @@ async function detectTextGCS(bucketName, fileName) {
 
 async function detectLogos(filePathName) {
   // [START vision_logo_detection]
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -237,7 +239,7 @@ async function detectLogos(filePathName) {
 async function detectLogosGCS(bucketName, fileName) {
   // [START vision_logo_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -258,7 +260,7 @@ async function detectLogosGCS(bucketName, fileName) {
 
 async function detectProperties(fileName) {
   // [START vision_image_property_detection]
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -278,7 +280,7 @@ async function detectProperties(fileName) {
 async function detectPropertiesGCS(bucketName, fileName) {
   // [START vision_image_property_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -300,7 +302,7 @@ async function detectPropertiesGCS(bucketName, fileName) {
 
 async function detectSafeSearch(fileName) {
   // [START vision_safe_search_detection]
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -325,7 +327,7 @@ async function detectSafeSearch(fileName) {
 async function detectSafeSearchGCS(bucketName, fileName) {
   // [START vision_safe_search_detection_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -352,7 +354,7 @@ async function detectCropHints(fileName) {
   // [START vision_crop_hint_detection]
 
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -378,7 +380,7 @@ async function detectCropHintsGCS(bucketName, fileName) {
   // [START vision_crop_hint_detection_gcs]
 
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -405,7 +407,7 @@ async function detectWeb(fileName) {
   // [START vision_web_detection]
 
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -461,7 +463,7 @@ async function detectWebGCS(bucketName, fileName) {
   // [START vision_web_detection_gcs]
 
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -517,7 +519,7 @@ async function detectWebGCS(bucketName, fileName) {
 async function detectWebGeo(fileName) {
   // [START vision_web_detection_include_geo]
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -553,7 +555,7 @@ async function detectWebGeo(fileName) {
 async function detectWebGeoGCS(bucketName, fileName) {
   // [START vision_web_detection_include_geo_gcs]
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -591,7 +593,7 @@ async function detectFulltext(filePathName) {
   // [START vision_fulltext_detection]
 
   // Imports the Google Cloud client library
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -639,7 +641,7 @@ async function detectFulltextGCS(bucketName, fileName) {
   // [START vision_fulltext_detection_gcs]
 
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -715,7 +717,7 @@ async function detectPdfText(bucketName, fileName, outputPrefix) {
 async function localizeObjects(fileName) {
   // [START vision_localize_objects]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
   const fs = require('fs');
 
   // Creates a client
@@ -743,7 +745,7 @@ async function localizeObjects(fileName) {
 async function localizeObjectsGCS(gcsUri) {
   // [START vision_localize_objects_gcs]
   // Imports the Google Cloud client libraries
-  const vision = require('@google-cloud/vision');
+  //import vision from '@google-cloud/vision';
 
   // Creates a client
   const client = new vision.ImageAnnotatorClient();
@@ -772,6 +774,10 @@ detectVision.prototype.detectFulltext = async function(filePathName) {
   return await detectFulltext(filePathName);
 }
 
+detectVision.prototype.detectFulltextByBase64 = async function(data) {
+	  return await detectFulltext(data);
+}
+
 detectVision.prototype.detectFaces = async function(filePathName) {
   return await detectFaces(filePathName);
 }
@@ -788,7 +794,7 @@ detectVision.prototype.detectLandmarks = async function(filePathName) {
   return await detectLandmarks(filePathName);
 }
 
-module.exports = detectVision;
+export default detectVision;
 
 /*
  * require(`yargs`) // eslint-disable-line .demand(1) .command( `faces
