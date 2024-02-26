@@ -10,11 +10,15 @@ import { Server } from "socket.io";
 import base64 from 'urlsafe-base64';
 
 const ProjectId = "avayademojp"; // ご自分のGoogle Cloud ProjectIdに変更してください
+const FQDN = "demo.avayaphone.net"; // ご自分のドメイン名に変更してください
+const WORKDIR = "/home/node/AGCP11"; // ご自分のパス名に変更してください
 
 import DetectVision from "./gcp/detectVision.js";
 import Translate from "./gcp/translate.js";
+import TextToSpeech from "./gcp/textToSpeech.js";
 import PaLM2 from "./gcp/palm2.js";
 import GenAI from "./gcp/genAI.js";
+import * as quate from './lib/quote.js';
 
 //const PORT = 443;
 const PORT = 80;
@@ -85,12 +89,12 @@ io.on("connection", (socket) => {
 
 		// （１）顧客がタイプしたテキストを、そのままレスポンスする（オウム返し）
 		
-		io.to(message.header.room).emit("data", message); 
+		//io.to(message.header.room).emit("data", message); 
 		
 
 		// （２）顧客がタイプしたテキストを、英語に翻訳してレスポンスを返す
 		// https://cloud.google.com/translate/docs/languages
-		/*
+		
 		if (message.body.media.dialog.messages[0].type === "text") {
 			var translate = new Translate(ProjectId);
 			translate.translateText(message.body.media.dialog.messages[0].text, "ja", "en").then((translations) => {
@@ -99,11 +103,11 @@ io.on("connection", (socket) => {
 				io.to(message.header.room).emit("data", message);
 			});
 		}
-		*/
+		
 
 		// （３）画像内のテキストを認識し、テキストをレスポンスにする
 		//　画像解析（OCR）のAPI https://cloud.google.com/vision/docs#docs
-		/*
+		
 		if (message.body.media.dialog.messages[0].type === "image") {
 			var detectVision = new DetectVision();
 			var imageFile = `public/data/temp.png`;
@@ -119,7 +123,7 @@ io.on("connection", (socket) => {
 				});
 			});
 		}
-		*/
+		
 
 		// （４）学習済み生成AIで「回答」を生成して表示（Google PaLM2 利用）
 		//　https://japan.googleblog.com/2023/05/palm-2.html
@@ -237,4 +241,131 @@ io.on("connection", (socket) => {
 
 	});
 });
+
+const textToSpeech = new TextToSpeech(ProjectId);
+const generateAudioFile = (languageCode, name, text, folder, file) => {
+	return new Promise(async (resolve) => {
+		var result = { text: text, folder: folder, file: file };
+		await textToSpeech.generateSpeechAudio(result.text, languageCode, name, "NEUTRAL", "MULAW", `${folder}/${file}`).then((error) => {
+			// translatedText, languageCode, name, ssmlGender, audioEncoding, filePath
+			console.log(`textToSpeech ${error} ${JSON.stringify(result)}`);
+			resolve(result);
+		});
+	});
+}
+
+app.post("/webhook", async (req, resp) => {
+	console.log();
+	console.log(req.body);
+	console.log(`intentInfo: ${JSON.stringify(req.body.intentInfo)}`);
+	let projectId = req.body.sessionInfo.session.split('/')[1];
+	let sessionId = req.body.sessionInfo.session.split('/')[9];
+	console.log(`project: ${projectId}`);
+	console.log(`session: ${sessionId}`);
+	console.log(`confidence: ${req.body.confidence}`);
+	console.log(`pageInfo: ${req.body.pageInfo.displayName}`);
+	console.log(`tag: ${req.body.fulfillmentInfo.tag}`);
+	let parameters = JSON.stringify(req.body.sessionInfo.parameters);
+	console.log(`parameters: ${parameters}`);
+	console.log(`messages: ${JSON.stringify(req.body.messages)}`);
+	console.log(`payload: ${JSON.stringify(req.body.payload)}`);
+	console.log(`transcript: ${req.body.transcript}`);
+	console.log(`languageCode: ${req.body.languageCode}`);
+	try {
+		let text = "";
+		let transfer = false;
+		switch (req.body.fulfillmentInfo.tag) {
+			case 'Start':
+				console.log(`Start: phoneNumber ${req.body.sessionInfo.parameters['avaya-session-telephone'].ani}`);
+				text = `<speak><audio src="https://${FQDN}/audios/chime.wav"></audio></speak>`;
+				break;
+			case 'StockPrice':
+				console.log(`StockPrice: CompanyName ${req.body.sessionInfo.parameters.company_name}`);
+				let ticker = 'AAPL';
+  				const quateGet = quate.get(ticker);
+				await quateGet.then((result) => {
+    				console.log(`result:${req.body.sessionInfo.parameters.company_name} ${result.postMarketPrice}`);
+					text = `<speak>${req.body.sessionInfo.parameters.company_name}の株価は${result.postMarketPrice}ドルです。</speak>`
+				});;
+				break;
+			case 'Translation':
+				var translatedText_en = "";
+				var translate = new Translate(ProjectId);
+				await translate.translateText(req.body.transcript, "ja", "en").then((translations) => {
+					translatedText_en = translations[0].translatedText;
+					console.log(`翻訳 ${req.body.transcript} -> ${translatedText_en}`);
+				});
+				var result = await generateAudioFile('en-US', 'en-US-Wavenet-D', translatedText_en, `${WORKDIR}/public/data`, `tts_en.wav`);
+				text = `<speak><audio src="https://${FQDN}/data/${result.file}"></audio></speak>`;
+				break;
+			case 'PaLM2':
+				console.log(`PaLM2 ${req.body.transcript}`);
+				const config = { projectId: ProjectId, model: "text-bison@001", params: { candidateCount: 1, maxOutputTokens: 512, temperature: 0.2, topP: 0.8, topK: 40 } };
+				const palm2 = new PaLM2(config);
+				await palm2.generate(`${req.body.transcript}を5行で要約`).then((results) => {
+						console.log(`PaLM2 要約：${JSON.stringify(results)}`);
+						text = `<speak>${results[0].resultText}</speak>`;
+				});
+				break;
+			case 'VertexAI':
+				console.log(`VertexAI ${req.body.transcript}`);
+				const model = { projectId: "817176915976", location: "global", collection: "default_collection", id: "hida-recommends-1_1703202913808", config: "default_config" };
+				const genAI = new GenAI(model);
+				await genAI.generate(req.body.transcript).then(async (results) => {
+					console.log(`GenAI 回答：${JSON.stringify(results)}`);
+					const config = { projectId: ProjectId, model: "text-bison@001", params: { candidateCount: 1, maxOutputTokens: 512, temperature: 0.2, topP: 0.8, topK: 40 } };
+					const palm2 = new PaLM2(config);
+					await palm2.generate(`${results[0].resultText}を5行で要約`).then((results) => {
+						console.log(`PaLM2 要約：${JSON.stringify(results)}`);
+						text = `<speak>${results[0].resultText}</speak>`;
+					});
+				});
+				break;
+			case 'EndSession':
+				// フロー終了時の処理を記述
+				console.log(` フロー終了切断`);
+				break;
+			case 'Hangup':
+				// お客様切断時の処理を記述
+				console.log(`お客様切断`);
+				break;
+			default:
+				text = `<speak><audio src="https://${FQDN}/audios/boing_x.wav"></audio></speak>`;
+				break;
+		}
+		let messages = [];
+		if (text) {
+			messages.push({ "text": { "text": [text], }, });
+		}
+		if (transfer) {
+			messages.push({
+				"payload": {
+					"avaya_telephony": {
+						"transfer": {
+							"type": "blind",
+							"transferaudio": "https://${FQDN}/audios/sample1.wav",
+							"maxtime": "600s",
+							"dest": `tel:${getTransferToNumber()}`,
+							"connecttimeout": "60s",
+							"uui": "00FA08000E04E35CA37458;encoding=hex"
+						},
+						"return": {
+							"state": "ok"
+						}
+					},
+				},
+			});
+		}
+		resp.send({
+			fulfillment_response: {
+				messages: messages,
+			},
+		}).end();
+		console.log(`resp.send ${JSON.stringify(messages)}`);
+	}
+	catch (error) {
+		console.log(`error ${JSON.stringify(error)}`);
+	}
+});
+
 
